@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Bean">
+    <select id="getUserBean" resultMap="userBeanMap" parameterType="java.lang.Integer">
+      SELECT
+       t1.accountId t1_accountId,
+       t1.id t1_id ,
+       t1.name t1_name,
+       t1.sex t1_sex,
+       t2.id t2_id,
+       t2.number t2_number ,
+       t2.password t2_password,
+       t3.disc T3_disc ,
+       t3.id t3_id,
+       t3.name t3_name ,
+       t3.userId t3_userId
+    FROM
+      userTest t1,
+	  accountInfo t2,
+      hobby t3
+    WHERE t1.accountId = t2.id
+		AND t3.userId=t1.id and t1.id=#{id}
+    </select>
+    <resultMap id="userBeanMap" type="org.mybatis.day03.bean.UserBean">
+        <id property="id" column="t1_id"/>
+        <result property="name" column="t1_name"/>
+        <result property="sex"  column="t1_sex" />
+        <association property="accountId" javaType="org.mybatis.day03.bean.AccountInfoBean">
+                <id property="id" column="t2_id"/>
+                <result property="number" column="t2_number"/>
+                <result property="password" column="t2_password"/>
+        </association>
+        <collection property="hobbyBeans" resultMap="hobbyBeanMap" ofType="org.mybatis.day03.bean.HobbyBean"/>
+    </resultMap>
+    <resultMap id="hobbyBeanMap" type="org.mybatis.day03.bean.HobbyBean">
+        <id property="id" column="t3_id"/>
+        <result property="name" column="t3_name"/>
+        <result property="disc" column="t3_disc"/>
+        <result property="userId" column="t3_userId"/>
+    </resultMap>
+</mapper>

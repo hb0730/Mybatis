@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.mybatis.spring.day02.dao.inter.UserTestDaoInter">
+    <select id="getAllUserTest" resultMap="allUserTestMap" >
+      SELECT *FROM userTest
+    </select>
+    <resultMap id="allUserTestMap" type="userTestBean">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <association property="accountInfoBean"  select="accountInfoBeanSelect" column="accountId"/>
+        <collection property="hobbyBeans" select="hobbyBeanSelect"  column="id"  />
+    </resultMap>
+    <select id="accountInfoBeanSelect" parameterType="java.lang.Integer" resultMap="accountInfoBeanMap">
+      SELECT *FROM accountInfo WHERE id=#{accountId}
+    </select>
+    <resultMap id="accountInfoBeanMap" type="accountInfoBean">
+        <id property="id" column="id"/>
+        <result property="number" column="number"/>
+        <result property="password" column="password"/>
+    </resultMap>
+    <select id="hobbyBeanSelect" parameterType="java.lang.Integer" resultMap="hobbyBeanMap">
+        SELECT *FROM hobby where userId=#{userId}
+    </select>
+    <resultMap id="hobbyBeanMap" type="hobbyBean">
+        <id property="id" column="id"/>
+        <result column="name" property="name"/>
+        <result property="disc" column="disc"/>
+        <result property="userId" column="userId"/>
+    </resultMap>
+    <select id="getUserTestByName" resultMap="allUserTestMap" parameterType="java.lang.String">
+        SELECT *FROM userTest WHERE
+        <if test="_parameter!=null">
+            name like #{_parameter}
+        </if>
+    </select>
+    <insert id="insertUserBeans" parameterType="java.util.List">
+      INSERT INTO userTest(name,sex)
+      <foreach collection="list" separator="," open="VALUES"  item="item">
+          (#{item.name},#{item.sex})
+      </foreach>
+    </insert>
+    <insert id="insertUserBean" parameterType="userTestBean">
+        INSERT INTO  userTest(name,sex) VALUES (#{name},#{sex})
+    </insert>
+    <update id="updateUserBeanById" parameterType="userTestBean">
+        UPDATE userTest
+        <trim prefix="set" suffixOverrides=",">
+          <if test="name!=null">
+              name =#{name},
+          </if>
+          <if test="sex!=null">sex=#{sex}</if>
+        </trim>
+        WHERE  id=#{id}
+    </update>
+    <update id="updateUserBeansById" parameterType="java.util.List">
+        UPDATE userTest
+        <trim prefix="set" suffixOverrides=",">
+          <trim prefix="name=case" suffixOverrides="end,">
+                <foreach collection="list" item="item" >
+                    WHEN id=#{id} WHEN #{name}
+                </foreach>
+          </trim>
+          <trim prefix="sex=case" suffixOverrides="end,">
+              <foreach collection="list" item="item">
+                  WHEN id=#{id} WHEN #{sex}
+              </foreach>
+          </trim>
+        </trim>
+        where
+        <foreach collection="userTestBeans" item="item" open="id in(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+    <delete id="deleteUserBeanById" parameterType="int">
+        DELETE FROM userTest where id=#{id}
+    </delete>
+
+
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.mybatis.day04.dao.UserDaoInter">
+    <!--二级缓存是跨SQLSession的缓存，也就类似有个工厂Factory创建了多个session，多个session都是存储一个缓存
+        二级缓存pojo对象需实现序列化
+        eviction 收回策略
+        flushInterval 刷新时间间隔
+        size 数目 默认1024
+        readOnly 只读
+    -->
+    <cache eviction="FIFO"
+            size="521"
+            readOnly="true"/>
+    <select id="getUserBean" resultMap="userBeanMap" parameterType="java.lang.Integer">
+      SELECT *FROM userTest WHERE id=#{id}
+    </select>
+
+    <resultMap id="userBeanMap" type="userBean">
+        <id property="id" column="id"/>
+        <result property="name" column="bane"/>
+        <result property="sex" column="sex"/>
+        <association property="accountId" select="accountSelect" column="accountId" />
+        <collection property="hobbyBeans" select="hobbySelect" column="id"/>
+    </resultMap>
+
+    <select id="accountSelect" resultMap="accountMap" parameterType="java.lang.Integer">
+        SELECT *FROM accountInfo WHERE id=#{accountId}
+    </select>
+    <resultMap id="accountMap" type="AccountInfoBean">
+        <id property="id" column="id"/>
+        <result property="number" column="number"/>
+        <result property="password" column="password"/>
+    </resultMap>
+    <select id="hobbySelect" resultMap="hobbyMap" parameterType="java.lang.Integer">
+        SELECT *FROM hobby WHERE userId=#{userId}
+    </select>
+    <resultMap id="hobbyMap" type="hobbyBean">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="disc" column="disc"/>
+        <result property="userId" column="userId"/>
+    </resultMap>
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:centext="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--读取资源右键-->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath:url.properties"/>
+    </bean>
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close" >
+        <property name="url" value="${url}" />
+        <property name="username" value="${username}" />
+        <property name="password" value="${password}" />
+        <property name="driverClassName" value="${driver}"></property>
+    </bean>
+    <!--创建SQLSession-->
+    <bean name="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="mapperLocations" value="classpath:org/mybatis/spring/day01/bean/*.xml"/>
+    </bean>
+    <!--Dao-->
+    <bean name="userDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+        <property name="mapperInterface" value="org.mybatis.spring.day01.dao.inter.UserTestDaoInter"/>
+    </bean>
+    <!--Service-->
+    <bean name="serviceImpl" class="org.mybatis.spring.day01.service.impl.UserTestServiceImpl">
+        <property name="userTestDaoInter" ref="userDao"/>
+    </bean>
+
+    <bean name="logs" class="org.mybatis.spring.day01.common.Logs"/>
+    <!--事务-->
+    <bean name="transaction" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:advice id="txTransaction" transaction-manager="transaction">
+        <tx:attributes>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config proxy-target-class="true">
+        <aop:pointcut id="aopPointcut" expression="execution(* org.mybatis.spring.day01.service.impl.*.*(..))"/>
+        <aop:advisor advice-ref="txTransaction" pointcut-ref="aopPointcut"/>
+        <aop:aspect ref="logs">
+            <aop:before method="before" pointcut-ref="aopPointcut"/>
+            <aop:after method="after" pointcut-ref="aopPointcut"/>
+            <aop:around method="around" pointcut-ref="aopPointcut"/>
+            <aop:after-throwing method="afterThrowing" throwing="e" pointcut-ref="aopPointcut"/>
+            <aop:after-returning method="afterReturning" returning="result" pointcut-ref="aopPointcut"/>
+        </aop:aspect>
+    </aop:config>
+
+</beans>

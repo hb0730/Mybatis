@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.mybatis.Bean.TestBean">
+    <select id="getCount" resultType="int">
+        SELECT COUNT(*) FROM Test;
+    </select>
+    <select id="getSelectForId" resultType="org.mybatis.Bean.TestBean" parameterType="org.mybatis.Bean.TestBean">
+       select *from Test where id =#{id};
+    </select>
+    <insert id="insertBean" parameterType="org.mybatis.Bean.TestBean">
+        insert into Test values(#{id},#{name});
+    </insert>
+    <update id="updateForId" parameterType="org.mybatis.Bean.TestBean">
+        update  Test set name =#{name } where id= #{id}
+    </update>
+
+</mapper>

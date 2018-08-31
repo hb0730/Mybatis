@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Bean">
+    <select id="findUserBeanAll" resultType="org.mybatis.day02.bean.UserBean">
+        SELECT *FROM user
+    </select>
+    <select id="findUserBeanById" parameterType="int" resultType="org.mybatis.day02.bean.UserBean">
+      SELECT *FROM user where id=#{id}
+    </select>
+    <!--${}就只是拼接#{}进行预编译?代替-->
+    <select id="findUserBeanByName" parameterType="String" resultType="org.mybatis.day02.bean.UserBean">
+        SELECT * FROM user where name like #{name}
+    </select>
+    <insert id="insertUserBean" parameterType="org.mybatis.day02.bean.UserBean">
+        <selectKey keyProperty="id" order="AFTER" keyColumn="id" resultType="java.lang.Integer">
+            select LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO user(name,sex) values(#{name},#{sex})
+    </insert>
+
+    <insert id="insertListUserBean" parameterType="java.util.List" keyProperty="id" keyColumn="id" useGeneratedKeys="true">
+        INSERT INTO user (name,sex)
+        <foreach collection="list" item="user" separator="," open="VALUES">
+            (#{user.name},#{user.sex})
+        </foreach>
+    </insert>
+    <!--批量修改-->
+    <update id="updateUserBeanById" parameterType="org.mybatis.day02.bean.UserBean" >
+        update user set name =#{name} where id=#{id}
+    </update>
+    <update id="updateListUserBeanById" parameterType="java.util.List">
+       UPDATE user
+      <trim prefix="set" suffixOverrides=",">
+        <trim prefix=" name = case"  suffix="end,">
+        <foreach collection="list" item="user">
+            when id=#{user.id} then #{user.name}
+        </foreach>
+        </trim>
+        <trim prefix="sex =case" suffix="end,">
+            <foreach collection="list" item="user">
+                when id=#{user.id} then #{user.sex}
+            </foreach>
+        </trim>
+      </trim>
+        where id in
+        <foreach collection="list" item="user" open="(" close=")" separator=",">
+            #{user.id}
+        </foreach>
+    </update>
+    <delete id="deleteUserBeanById" parameterType="java.lang.Integer">
+            delete from user where id=#{id}
+    </delete>
+</mapper>
